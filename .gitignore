@@ -1,6 +1,8 @@
-.db
+*.db
 ehthumbs.db
 Desktop.ini
-.exe
+*.exe
+*.*~
+
 
 
