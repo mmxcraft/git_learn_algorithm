@@ -6,6 +6,8 @@ const int MAX=1000;
 
 int X[MAX], Y[MAX];
 
+/* add one comment to test */
+
 int main(int argc, char** argv)
 {
   long long result;
