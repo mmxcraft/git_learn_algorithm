@@ -20,8 +20,7 @@ void init(){
 	cin >> M >> N;
 	for (int ii=0; ii<M; ii++)
 		for(int jj=0; jj<N; jj++)
-			cin >>
-	
+			cin >>tile[ii][jj];
 }
 
 
@@ -55,8 +54,51 @@ int  calc()
 		if(get(M-1,j) !=0) 
 			return -1;
 	}
+	
+	int res=0;
+	for(int ii=0;ii<M;ii++)
+		for(int jj=0; jj<N; jj++)
+			res += flip[ii][jj];
+	return res;
 }
 
+
+void solve()
+{
+	
+	int res=-1;
+	
+	for(int ii=0; ii< 1<< N; ii++) {
+		memset(flip,0,sizeof(filp));
+		for(int jj=0; jj < N; jj++) {
+			flip[0][N-jj-1] = ii>>jj &1;
+		}
+		
+		int num = calc();
+		if(num >= 0 && (res <0 || res> num)) {
+			res =num;
+			memcpy(opt,flip,sizeof(flip));
+		}
+	}
+	
+	if(res<0)
+		cout << "IMPOSSIBLE\n";
+	else
+		for(int ii=0;ii<M;ii++)
+			for(int jj=0;jj<N;jj++) {
+				cout << opt[ii][jj];
+				if(jj == N-1)
+					cout << "\n";
+			}
+}
+
+
+int main(int argc, char**argv) 
+{
+	init();
+	solve();
+	return 0;
+}
 
 
 
