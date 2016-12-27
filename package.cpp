@@ -5,7 +5,7 @@ using namespace std;
 const int MAX_N=100;
 const int MAX_W=100;
 
-int n,w;
+int n,W;
 
 int w[MAX_N],v[MAX_N];
 int dp[MAX_N+1][MAX_W+1];
@@ -18,8 +18,8 @@ void init()
 	cout << "Array of w, v:" << endl;
 	for(int ii=0; ii<n; ii++)
 		cin >> w[ii]>>v[ii];
-	cout << "Max weight w:";
-	cin >> w;
+	cout << "Max weight W:";
+	cin >> W;
 	
 }
 
@@ -28,7 +28,7 @@ void compute_dp()
 	for(int jj=0;jj<n;jj++)
 		dp[n][jj] = 0;
 	for(int ii=n-1; ii>=0; ii--)
-		for(int jj=0; jj<=w; jj++)
+		for(int jj=0; jj<=W; jj++)
 			if(jj < w[ii])
 				dp[ii][jj] = dp[ii+1][jj];
 			else
@@ -37,12 +37,13 @@ void compute_dp()
 
 int rec(int i, int j)
 {
+	int res;
 	if(i == n)
 		return 0;
 	else if(j < w[i])
-		res(i+1,j)
+		rec(i+1,j);
 	else 
-		res = max(res(i+1,j),res(i+1,j-w[i])+v[i]);
+		res = max(rec(i+1,j),rec(i+1,j-w[i])+v[i]);
 	return res;
 }
 
@@ -52,7 +53,7 @@ int rec(int i, int j)
 int main(int argc, char ** argv)
 {
 	init();
-	rec(0,w);
+	rec(0,W);
 
 	return 0;
 
