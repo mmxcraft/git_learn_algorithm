@@ -1,14 +1,20 @@
+
+import java.util.LinkedList;
+import java.util.Queue;
 import edu.princeton.cs.algs4.MinPQ;
 
 public class Board {
     private int [][] myBoard;
+    private int blank_row, blank_col;
     public Board(int[][] blocks) // construct a board from an n-by-n array of blocks
     {
         int len = blocks.length;
         myBoard = new int [len][len];
         for(int ii = 0; ii < len; ii++)
-            for(int jj = 0; jj < len; jj++)
+            for(int jj = 0; jj < len; jj++) {
                 myBoard[ii][jj] = blocks[ii][jj];
+                if(blocks[ii][jj] == 0) {blank_row=ii; blank_col=jj;}
+            }
     }
     public int dimension()                 // board dimension n
     {
@@ -96,9 +102,25 @@ public class Board {
 
         return true;
     }
-    public Iterable<Board> neighbors()     // all neighboring boards
+    public Queue<Board> neighbors()     // all neighboring boards
     {
+        Queue<Board> all_neighbors =  new LinkedList<Board>();
+        int rows[] = {0,-1,0,1};
+        int cols[] = {-1,0,1,0};
 
+        for(int ii = 0 ; ii < 4; ii++) {
+            int cur_row = blank_row + rows[ii];
+            int cur_col = blank_col + cols[ii];
+            if(cur_row >= 0 && cur_row < dimension() && cur_col >= 0 && cur_col < dimension()) {
+                int [][]  tmpblock = new int [dimension()] [dimension()];
+                tmpblock = myBoard;
+                tmpblock[blank_row] [blank_col] = tmpblock[cur_row][cur_col];
+                tmpblock[cur_row][cur_col] = 0;
+                Board newBoard = new Board(tmpblock);
+                all_neighbors.offer(newBoard);
+            }
+        }
+        return all_neighbors;
     }
     public String toString()               // string representation of this board (in the output format specified below)
     {
