@@ -98,6 +98,22 @@ public class Board {
     }
     public Iterable<Board> neighbors()     // all neighboring boards
     {
+        int dimSize = dimension();
+        int [][] neighborBlocks = new int[dimSize][dimSize];
+        for(int ii = 0; ii < dimSize; ii++)
+            for(int jj = 0; jj < dimSize; jj++)
+            {
+                if(neighborBlocks[ii][jj] !=0)
+                    continue;
+                else{
+
+                }
+            }
+
+
+        Queue<Board> queBoard = new Queue<Board>(myBoard);
+
+
 
     }
     public String toString()               // string representation of this board (in the output format specified below)
