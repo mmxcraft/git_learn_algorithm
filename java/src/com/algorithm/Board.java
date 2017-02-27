@@ -108,6 +108,21 @@ public class Board {
     }
     public Queue<Board> neighbors()     // all neighboring boards
     {
+        int dimSize = dimension();
+        int [][] neighborBlocks = new int[dimSize][dimSize];
+        for(int ii = 0; ii < dimSize; ii++)
+            for(int jj = 0; jj < dimSize; jj++)
+            {
+                if(neighborBlocks[ii][jj] !=0)
+                    continue;
+                else{
+
+                }
+            }
+
+
+        Queue<Board> queBoard = new Queue<Board>(myBoard);
+
         Queue<Board> all_neighbors =  new LinkedList<Board>();
         int rows[] = {0,-1,0,1};
         int cols[] = {-1,0,1,0};
