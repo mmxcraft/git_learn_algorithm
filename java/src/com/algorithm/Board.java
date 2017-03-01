@@ -121,7 +121,7 @@ public class Board {
             }
 
 
-        Queue<Board> queBoard = new Queue<Board>(myBoard);
+        //Queue<Board> queBoard = new Queue<Board>(myBoard);
 
         Queue<Board> all_neighbors =  new LinkedList<Board>();
         int rows[] = {0,-1,0,1};
