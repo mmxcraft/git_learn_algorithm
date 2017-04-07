@@ -1,21 +1,30 @@
 
-import java.util.*;
-import edu.princeton.cs.algs4.MinPQ;
-import edu.princeton.cs.algs4.In;
+import java.util.Stack;
+import java.util.Comparator;
 import edu.princeton.cs.algs4.StdOut;
+
 
 public class Board {
     private int [][] myBoard;
-    private int blank_row, blank_col;
+    private int blankRow, blankCol;
+
+    private class BoardCmp implements Comparator<Board> {
+        public int compare(Board p1, Board p2) {
+            return p2.manhattan() - p1.manhattan();
+        }
+    }
 
     public Board(int[][] blocks) // construct a board from an n-by-n array of blocks
     {
         int len = blocks.length;
         myBoard = new int [len][len];
-        for(int ii = 0; ii < len; ii++)
-            for(int jj = 0; jj < len; jj++) {
+        for (int ii = 0; ii < len; ii++)
+            for (int jj = 0; jj < len; jj++) {
                 myBoard[ii][jj] = blocks[ii][jj];
-                if(blocks[ii][jj] == 0) {blank_row=ii; blank_col=jj;}
+                if (blocks[ii][jj] == 0) {
+                    blankRow = ii;
+                    blankCol = jj;
+                }
             }
     }
     public int dimension()                 // board dimension n
@@ -26,10 +35,10 @@ public class Board {
     {
         int len = dimension();
         int outNum = 0;
-        for(int ii = 0; ii < len; ii++)
-            for(int jj = 0; jj < len; jj++)
+        for (int ii = 0; ii < len; ii++)
+            for (int jj = 0; jj < len; jj++)
             {
-                if(myBoard[ii][jj] != ii*len + jj)
+                if (myBoard[ii][jj] != ii*len+jj+1 && myBoard[ii][jj] != 0)
                     outNum++;
             }
         return outNum;
@@ -38,18 +47,19 @@ public class Board {
     {
         int ii, jj;
         int result = 0;
-        for (ii = 0; ii < dimension(); ii++) {
-            for (jj = 0; jj < dimension(); jj++) {
+        int dimSize = dimension();
+        for (ii = 0; ii < dimSize; ii++) {
+            for (jj = 0; jj < dimSize; jj++) {
                 if (myBoard[ii][jj] == 0)
                     continue;
                 else {
-                    int kk = (dimension() * ii + jj + 1) - myBoard[ii][jj];
+                    int kk = Math.abs((dimSize * ii + jj + 1) - myBoard[ii][jj]);
                     if (kk == 0)
                         continue;
                     else {
-                        int rows_move = kk / dimension();
-                        int cols_move = kk % dimension();
-                        result = result + rows_move + cols_move;
+                        int rowsMove = Math.abs((myBoard[ii][jj]-1) / dimSize - ii);
+                        int colsMove = Math.abs((myBoard[ii][jj]-1) % dimSize - jj);
+                        result = result + rowsMove + colsMove;
                     }
                 }
             }
@@ -60,35 +70,47 @@ public class Board {
     public boolean isGoal()                // is this board the goal board?
     {
         int len = dimension();
-        for(int ii = 0; ii < len; ii++)
-            for(int jj = 0; jj < len; jj++)
+        for (int ii = 0; ii < len; ii++)
+            for (int jj = 0; jj < len; jj++)
             {
-                if(myBoard[ii][jj] != ii*len + jj + 1)
+                if (myBoard[ii][jj] != ii*len+jj+1 && myBoard[ii][jj] != 0)
                     return false;
             }
         return true;
     }
-    public Board twin()    // a board that is obtained by exchanging any pair of blocks
+    public Board twin()
     {
-        if(blank_row == dimension() && blank_col == dimension() && hamming() == 2)
-            return this;
+        int dimSize = dimension();
+        int [][]  twinBlocks = new int [dimSize][dimSize];
+        for (int ii = 0; ii < dimSize; ii++)
+            for (int jj = 0; jj < dimSize; jj++)
+                twinBlocks[ii][jj] = myBoard[ii][jj];
 
-        int [][]  twinBlocks = new int [dimension()] [dimension()];
-        int tmpPos = -1;
-        for(int ii = 0; ii < dimension(); ii ++)
-        {
-            if(tmpPos != -1 && twinBlocks[0][ii] != 0)
-            {
-                int tmpValue = twinBlocks[0][ii];
-                twinBlocks[0][ii] = twinBlocks[0][tmpPos];
-                twinBlocks[0][tmpPos] = tmpValue;
-                break;
+        int x1, x2, y1, y2;
+        x1 = -1;
+        x2 = -1;
+        y1 = 0;
+        y2 = 0;
+        for (int ii = 0; ii < dimSize; ii++)
+         for (int jj = 0; jj < dimSize; jj++) {
+                if (twinBlocks[ii][jj] != 0 && x1 == -1) {
+                    x1 = ii;
+                    y1 = jj;
+                    continue;
+                }
+                if (twinBlocks[ii][jj] != 0 && x2 == -1) {
+                    x2 = ii;
+                    y2 = jj;
+                }
+                if (x1 != -1 && x2 != -1) {
+                    int tmpvlaue = twinBlocks[x1][y1];
+                    twinBlocks[x1][y1] = twinBlocks[x2][y2];
+                    twinBlocks[x2][y2] = tmpvlaue;
+                    return new Board(twinBlocks);
+                }
             }
 
-            if(twinBlocks[0][ii] != 0 )
-                tmpPos = ii;
-        }
-        return new Board(twinBlocks);
+            return null;
     }
     public boolean equals(Object y)        // does this board equal y?
     {
@@ -97,51 +119,43 @@ public class Board {
         if (y.getClass() != this.getClass()) return false;
         Board that = (Board) y;
 
-        for(int ii = 0; ii < dimension(); ii++)
+        for (int ii = 0; ii < dimension(); ii++)
             for (int jj = 0; jj < dimension(); jj++)
             {
-                if(this.myBoard[ii][jj] != that.myBoard[ii][jj])
+                if (this.myBoard[ii][jj] != that.myBoard[ii][jj])
                     return false;
             }
 
         return true;
     }
-    public Queue<Board> neighbors()     // all neighboring boards
+    public Iterable<Board> neighbors()     // all neighboring boards
     {
         int dimSize = dimension();
-        int [][] neighborBlocks = new int[dimSize][dimSize];
-        for(int ii = 0; ii < dimSize; ii++)
-            for(int jj = 0; jj < dimSize; jj++)
+        Stack<Board> allNeighbors = new Stack<Board>();
+
+       // Queue<Board> allNeighbors =  new LinkedList<Board>();
+        int[] rows = {0, -1, 0, 1};
+        int[] cols = {-1, 0, 1, 0};
+
+        for (int ii = 0; ii < 4; ii++) {
+            int curRow = blankRow + rows[ii];
+            int curCol = blankCol + cols[ii];
+            if (curRow >= 0 && curRow < dimension() && curCol >= 0 && curCol < dimension())
             {
-                if(neighborBlocks[ii][jj] !=0)
-                    continue;
-                else{
+                int [][]  tmpblock = new int[dimSize][dimSize];
+                for (int kk = 0; kk < dimSize; kk++)
+                    for (int jj = 0; jj < dimSize; jj++)
+                        tmpblock[kk][jj] = myBoard[kk][jj];
 
-                }
-            }
-
-
-        //Queue<Board> queBoard = new Queue<Board>(myBoard);
-
-        Queue<Board> all_neighbors =  new LinkedList<Board>();
-        int rows[] = {0,-1,0,1};
-        int cols[] = {-1,0,1,0};
-
-        for(int ii = 0 ; ii < 4; ii++) {
-            int cur_row = blank_row + rows[ii];
-            int cur_col = blank_col + cols[ii];
-            if(cur_row >= 0 && cur_row < dimension() && cur_col >= 0 && cur_col < dimension()) {
-                int [][]  tmpblock = new int [dimension()] [dimension()];
-                tmpblock = myBoard;
-                tmpblock[blank_row] [blank_col] = tmpblock[cur_row][cur_col];
-                tmpblock[cur_row][cur_col] = 0;
+                tmpblock[blankRow] [blankCol] = tmpblock[curRow][curCol];
+                tmpblock[curRow][curCol] = 0;
                 Board newBoard = new Board(tmpblock);
-                all_neighbors.offer(newBoard);
+                allNeighbors.push(newBoard);
             }
         }
-        return all_neighbors;
+        return allNeighbors;
     }
-    public String toString()               // string representation of this board (in the output format specified below)
+    public String toString()
     {
         StringBuilder s = new StringBuilder();
         s.append(dimension() + "\n");
@@ -157,20 +171,33 @@ public class Board {
 
     public static void main(String[] args) // unit tests (not graded)
     {
-        class BoardCmp implements Comparator<Board> {
+        /* class BoardCmp implements Comparator<Board> {
             public int compare(Board p1, Board p2) {
-                return p1.manhattan() - p2.manhattan();
+                return p2.manhattan() - p1.manhattan();
             }
         }
 
         BoardCmp cmp = new BoardCmp();
-        MinPQ<Board> BoardList = new MinPQ<Board>(cmp);
-        int [][] test = {{3,2,1}, {4, 0, 5}, {7,6,8}};
-        int [][] test1 = {{1,2,3}, {4,5,6}, {7,8,0}};
+        MinPQ<Board> BoardList = new MinPQ<Board>(cmp);*/
 
-        LinkedList<Board> usedBoardList = new LinkedList<Board>();
+
+
+
+        int [][] test =  {{5, 8, 7}, {1, 4, 6}, {3, 0, 2}};
+        int [][] test1 = {{ 2, 0, 3, 4}, { 1, 10, 6, 8}, {5, 9, 7, 12}, {13, 14, 11, 15} };
+        // int [][] test2 = {{1,2,3}, {4,0,6}, {7,5,8}};
+        // int [][] test2 = test1.clone();
+        // test2[0][0] = -1;
+
 
         Board B1 = new Board(test);
+       Board B2 = new Board(test1);
+
+       StdOut.printf("B1.manhattan() =%d, B2.manhattan()=%d \n",B1.manhattan(),B2.manhattan());
+        StdOut.print(B2.twin());
+        StdOut.print(B2);
+
+        /* Board B1 = new Board(test);
         Board B2 = new Board(test1);
         StdOut.printf("B2.manhattan= %d\n", B2.manhattan());
 
@@ -182,7 +209,7 @@ public class Board {
         StdOut.print(B2);
 
         BoardList.insert(new Board(test));
-        BoardList.insert(new Board(test1));
+        BoardList.insert(new Board(test1)); */
 
 
 

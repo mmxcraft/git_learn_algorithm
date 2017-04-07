@@ -1,61 +1,122 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
-public class Solver {
-    private MinPQ<Board> BoardList;
-    private Board initBoard;
-    private int moves;
-    public Solver(Board initial)     // find a solution to the initial board (using the A* algorithm)
-    {
-        class BoardCmp implements Comparator<Board> {
-            public int compare(Board p1, Board p2) {
-                return p1.manhattan() - p2.manhattan();
-            }
-        }
 
-        BoardCmp cmp = new BoardCmp();
-        BoardList = new MinPQ<Board>(cmp);
-        BoardList.insert(initial);
-        initBoard = initial;
+public class Solver {
+    private MinPQ<Node> boardList;
+    private MinPQ<Node> twinBoardList;
+    private boolean canResolve;
+    private Node minNode;
+    private int move;
+    private ArrayList<Board> solutionBoardList;
+
+
+
+   private class Node implements Comparable<Node> {
+       private Board board;
+       private int moves;
+       private Node prev;
+       private int priority = -1;
+
+       Node(Board newBoard, int newMoves, Node p)
+       {
+           board = newBoard;
+           moves = newMoves;
+           prev = p;
+
+       }
+
+       public int priority()
+       {
+           if (priority >0)
+               return priority;
+
+           return moves + board.manhattan();
+       }
+       public int compareTo(Node that)
+       {
+           return this.priority() - that.priority();
+       }
+
+       public Board getBoard()   { return board; }
+    }
+
+   public Solver(Board initBoard)     // find a solution to the initial board (using the A* algorithm)
+    {
+        if (initBoard == null)
+            throw new java.lang.NullPointerException();
+
+        canResolve = false;
+        minNode = null;
+
+        boardList = new MinPQ<Node>();
+        twinBoardList = new MinPQ<Node>();
+        boardList.insert(new Node(initBoard, 0, null));
+        twinBoardList.insert(new Node(initBoard.twin(), 0, null));
+
+        solutionBoardList = new ArrayList<>();
+        realSolution();
+
     }
     public boolean isSolvable()            // is the initial board solvable?
     {
-        if(initBoard.twin() == initBoard)
-            return false;
-        else
-            return true;
+        return canResolve;
     }
     public int moves()                     // min number of moves to solve initial board; -1 if unsolvable
     {
-        return 0;
+        if (canResolve)
+            return move;
+        else
+            return -1;
     }
-    public Iterable<Board> solution()      // sequence of boards in a shortest solution; null if unsolvable
+    public Iterable<Board> solution()
     {
-        LinkedList<Board> usedBoardList = new LinkedList<Board>();
-        LinkedList<Board> SolutionBoardList = new LinkedList<Board>();
+        if (!canResolve)
+            return null;
 
-        //usedBoardList.add(initial);
-        moves = 0;
-        while (!BoardList.isEmpty()) {
-            Board curBoard = BoardList.delMin();
-            if(curBoard.isGoal())
-                return SolutionBoardList;
-            Queue<Board> allNeighbors = curBoard.neighbors();
-            moves++;
-            while (!allNeighbors.isEmpty()){
-                Board newBoard = allNeighbors.poll();
-                if (usedBoardList.indexOf(newBoard)== -1 ) {
-                    BoardList.insert(newBoard);
-                    usedBoardList.add(newBoard);
+        while (minNode != null) {
+            solutionBoardList.add(minNode.board);
+            minNode = minNode.prev;
+        }
+        Collections.reverse(solutionBoardList);
+        return solutionBoardList;
+    }
+
+    private void realSolution()      // sequence of boards in a shortest solution; null if unsolvable
+    {
+        boolean alt = false;
+        while (!boardList.isEmpty()) {
+            if (!alt) {
+             //    for (Node tmpBoard: boardList)
+             //       StdOut.printf("moves=%d, priority=%d,%s",tmpBoard.moves,tmpBoard.priority(),tmpBoard.board);
+                minNode = boardList.delMin();
+                if (minNode.getBoard().isGoal()) {
+                    canResolve = true;
+                    move = minNode.moves;
+                    break;
                 }
+
+                for (Board each: minNode.getBoard().neighbors())
+                {
+                    if (minNode.prev == null || !each.equals(minNode.prev.board)) {
+                        boardList.insert(new Node(each, minNode.moves+1, minNode));
+                    }
+                }
+                alt = true;
+            } else {
+                Node minTwinNode = twinBoardList.delMin();
+                if (minTwinNode.board.isGoal())
+                    break;
+
+                for (Board each: minTwinNode.board.neighbors()) {
+                    if (minTwinNode.prev == null || !each.equals(minTwinNode.prev.board))
+                        twinBoardList.insert(new Node(each, minTwinNode.moves+1, minTwinNode));
+                }
+                alt = false;
             }
         }
-
-
-
-        return null;
-
     }
     public static void main(String[] args) // solve a slider puzzle (given below)
     {
