@@ -41,15 +41,42 @@ public class KdTree {
             } else {
                 double pXmax = 1.0;
                 double pYmax = 1.0;
-                if (pNode.pNode != null) {
-                    pXmax = pNode.pNode.rect.xmax();
-                    pYmax = pNode.pNode.rect.ymax();
+                Node pppNode = pNode.pNode;
+                Node curPNode = pNode;
+                while (pppNode != null)
+                {
+                    if (pppNode.rect.contains(p1)) {
+                        pXmax = pppNode.rect.xmax();
+                        pYmax = pppNode.rect.ymax();
+                        break;
+                    } else {
+                        curPNode = pppNode;
+                        pppNode = pppNode.pNode;
+                    }
                 }
-
-                if (xFlag)
-                    rect = new RectHV(rect.xmin(), rect.ymax(), p1.x(), pYmax);
-                else
-                    rect = new RectHV(rect.xmax(), rect.ymin(), pXmax, p1.y());
+                rect = curPNode.rect;
+                if (xFlag) {
+                    if (rect.contains(p1)) {
+                        rect = new RectHV(rect.xmin(), rect.ymin(), p1.x(), pYmax);
+                    } else {
+                        if (curPNode.xFlag != xFlag)
+                            rect = new RectHV(rect.xmin(), rect.ymax(), p1.x(), pYmax);
+                         else
+                            rect = new RectHV(rect.xmax(), rect.ymin(), p1.x(), pYmax);
+                    }
+                }
+                else {
+                    if (rect.contains(p1)) {
+                        rect = new RectHV(rect.xmin(), rect.ymin(), pXmax, p1.y());
+                    } else {
+                        if (pNode.xFlag != xFlag) {
+                            rect = pNode.rect;
+                            rect = new RectHV(rect.xmax(), rect.ymin(), pXmax, p1.y());
+                        }
+                        else
+                            rect = new RectHV(rect.xmin(),rect.ymax(),p1.x(),pYmax);
+                    }
+                }
             }
         }
 
@@ -71,10 +98,30 @@ public class KdTree {
 
     private int comparePoint(Point2D p1, Point2D p2, boolean xFlag)
     {
-        if (xFlag)
-            return (p1.x() < p2.x()) ? -1 : (p1.x() == p2.x()) ? 0 : 1;
-        else
-            return (p1.y() < p2.y()) ? -1 : (p1.y() == p2.y()) ? 0 : 1;
+        if (xFlag) {
+            if (p1.x() < p2.x())
+                return -1;
+            else if (p1.x() > p2.x())
+                return 1;
+            else if (p1.y() < p2.y())
+                return -1;
+            else if (p1.y() > p2.y())
+                return 1;
+            else
+                return 0;
+        }
+        else {
+            if (p1.y() < p2.y())
+                return -1;
+            else if (p1.y() > p2.y())
+                return 1;
+            else if (p1.x() < p2.x())
+                return -1;
+            else if (p1.x() > p2.x())
+                return 1;
+            else
+                return 0;
+        }
     }
 
 
@@ -114,31 +161,40 @@ public class KdTree {
         int cmp = comparePoint(node.p, newP, xFlag);
         xFlag = !node.xFlag;
         if (cmp > 0) {
+            int orgSz = 0;
             if (node.lb != null) {
                 rect = node.lb.rect;
+                orgSz = node.lb.size;
             }
             Node newNode = putNode(node.lb, newP, rect, node, xFlag);
             if (node.lb != newNode) {
                 node.lb = newNode;
             } else {
-                if (node.size == node.lb.size)
+                if (orgSz != node.lb.size)
                     node.size++;
                 return node;
             }
         }
-        else if (cmp < 0) {
+        else {
+            //skip duplicate node
+            if (node.p.equals(newP))
+                return node;
+
+            int orgSz = 0;
             if (node.rt != null) {
                 rect = node.rt.rect;
+                orgSz = node.rt.size;
             }
             Node newNode = putNode(node.rt, newP, rect, node, xFlag);
             if (newNode != node.rt) {
                 node.rt = newNode;
             } else {
-                if (node.size == node.rt.size)
+                if (orgSz != node.rt.size)
                     node.size++;
                 return node;
             }
-        } else {
+        }
+        /*else {
                 if (node.p.equals(newP))
                     return node;
                 if (node.lb != null) {
@@ -151,7 +207,7 @@ public class KdTree {
                 }else {
                     Node newNode = putNode(null,newP, rect, node, xFlag);
                 }
-        }
+        }*/
         node.size++;
         return node;
     }
@@ -271,15 +327,22 @@ public class KdTree {
     {
         KdTree treeSet = new KdTree();
         treeSet.insert(new Point2D(0.7, 0.2));
-        //treeSet.insert(new Point2D(0.5, 0.4));
-        treeSet.insert(new Point2D(0.2, 0.3));
-        treeSet.insert(new Point2D(0.2, 0.4));
-        treeSet.insert(new Point2D(0.2, 0.5));
-        //treeSet.insert(new Point2D(0.2, 0.6));
+        treeSet.insert(new Point2D(0.5, 0.4));
+        treeSet.insert(new Point2D(0.2, 0.8));
+        treeSet.insert(new Point2D(0.4, 0.5));
+        treeSet.insert(new Point2D(0.6, 0.6));
 
-         //treeSet.insert(new Point2D(0.4, 0.3));
-       // treeSet.insert(new Point2D(0.4,0.7));
-       // treeSet.insert(new Point2D(0.8,0.6));
+        //treeSet.insert(new Point2D(0.2, 0.4));
+        //treeSet.insert(new Point2D(0.2, 0.5));
+        //treeSet.insert(new Point2D(0.2, 0.6));
+        //treeSet.insert(new Point2D(0.2, 0.3));
+        //treeSet.insert(new Point2D(0.2, 0.5));
+
+        // treeSet.insert(new Point2D(0.4, 0.3));
+        // treeSet.insert(new Point2D(0.4,0.7));
+        //treeSet.insert(new Point2D(0.4,0.2));
+        //treeSet.insert(new Point2D(0.8,0.6));
+        //treeSet.insert(new Point2D(0.9,0.3));
 
         StdDraw.setXscale(0, 1.0);
         StdDraw.setYscale(0, 1.0);
