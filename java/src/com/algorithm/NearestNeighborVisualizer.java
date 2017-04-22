@@ -35,6 +35,7 @@ public class NearestNeighborVisualizer {
             Point2D p = new Point2D(x, y);
             kdtree.insert(p);
             brute.insert(p);
+            cnt++;
         }
 
 
