@@ -1,19 +1,14 @@
-
-import edu.princeton.cs.algs4.StdIn;
-import edu.princeton.cs.algs4.StdRandom;
-import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdOut;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        int [] allInts = In.readInts(args[0]);
-
-        for(int ii = 0; ii < allInts.length; ii++) {
-            StdOut.println(allInts[ii]);
-        }
-
+        String name = "https://finance.yahoo.com/quote/orcl";
+        In in = new In(name);
+        String text = in.readAll();
+        StdOut.print(text);
          /*while (!StdIn.isEmpty())
         {
             StdOut.println(StdIn.readInt());
