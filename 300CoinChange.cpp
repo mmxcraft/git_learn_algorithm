@@ -15,23 +15,29 @@ using namespace std;
 class Solution {
 public:
 	int coinChange(vector<int>& coins, int amount) {
+		int sz = coins.size();
+		vector<int> dp(amount+1, INT32_MAX);
+		dp[0] = 0;
 
+		for(int i=1; i<= amount; i++)
+			for (int j = 0; j < sz; j++) {
+				if (coins[j] == i)
+					dp[i] = 1;
+				else if (coins[j] < i) {
+					dp[i] = min(dp[i - coins[j]] + 1, dp[i]);
+				}
+			}
+		return dp[amount];
 	}
 };
 
 int main(int argc, char**argv)
 {
 	Solution test;
-	vector<pair<int, int>>  nums{ { 1,17 },{ 1,10 },{ 2,15 },{ 2,5 },{ 3,8 },{ 4,10 } };
-	vector<pair<int, int>>  nums1{ { 1, 2 },{ 3, 4 },{ 5, 6 },{ 7, 8 } };
-	vector<pair<int, int>> nums2{ { 1,7 },{ 4,9 },{ 2,5 } };
+	vector<int> numList{ 1,3,4,5,8,10,20,50, 100 };
 
-
-	cout << "maxEnvelopes(0) = " << test.maxEnvelopes(nums) << endl;
-	cout << "maxEnvelopes(1) = " << test.maxEnvelopes(nums1) << endl;
-	cout << "maxEnvelopes(2) = " << test.maxEnvelopes(nums2) << endl;
-
-
+	cout << test.coinChange(numList, 7) << endl;
+	cout << test.coinChange(numList, 1232) << endl;
 
 	char aa;
 	cin >> aa;
